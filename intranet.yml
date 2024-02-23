@@ -1,0 +1,48 @@
+---
+- name : enable intranet service
+  hosts : servera
+  become : true
+  tasks :
+          - name : update httpd and firewalld
+            yum :
+                 name :
+                      - httpd
+                      - firewalld
+                 state : latest
+
+          - name : test html page is enable
+            copy :
+                  content : "Welcome to intranet web ! \n"
+                  dest : /var/www/html/index.html
+
+          - name : firewalld enable and running
+            service :
+                    name : firewalld
+                    state : started
+                    enabled : true
+
+          - name : firewall enable http access
+            firewalld :
+                    service : http
+                    state : enabled
+                    permanent : true
+                    immediate : yes
+
+          - name : httpd enable and running
+            service :
+                    name : httpd
+                    state : started
+                    enabled : true
+
+- name : tested intranet web
+  hosts : localhost
+  become : false
+  tasks :
+          - name : connect to intranet web
+            uri :
+                 url : http://servera.lab.example.com
+                 return_content : yes
+                 status_code : 200
+
+...
+
